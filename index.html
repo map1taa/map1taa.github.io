@@ -416,6 +416,12 @@ kyotoData.forEach(function(data) {
         })
         .addTo(kyoto);
 });
+var   yokochoIcon = L.icon({
+    iconUrl: 'images/yokocho.png', // Replace with your image URL
+    iconSize: [40, 40], // Adjust size as needed
+    iconAnchor: [20, 40], // Anchor the icon at the bottom center
+    popupAnchor: [0, -40] // Adjust to position popup above the icon
+});
 
 // Create the Kyoto layer group
 var yokocho = L.layerGroup();
@@ -428,7 +434,7 @@ yokochoData.forEach(function(data) {
 
 	const googleMapsLink = `https://www.google.com/maps/dir/?api=1&destination=${data.coords[0]},${data.coords[1]}`;
     
-    L.marker(data.coords, {icon: jinjaIcon}).bindPopup(
+    L.marker(data.coords, {icon: yokochoIcon}).bindPopup(
         "<div style='max-width: 200px; padding: 5px;'>" +
         "<h1 style='height: 100px; width: 200px; background-image: url("+ data.image +"); background-repeat: no-repeat; background-size: cover; object-fit: cover;'></h1>" +
         "<b>" + data.title + "</b><br>" +
