@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<!-- Make sure you put this AFTER Leaflet's CSS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<div id="map" style="width: 100%; height: 100vh; position: relative; outline-style: none; margin: 0; padding: 0;"></div>
+<script>
+
+// Data castillos
+
+var castilloData = [
+    { coords: [41.7972222, 140.7569444], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/img_02.jpg', title: '五稜郭 / Goryokaku', description: '日本最北の西洋式城郭。五角形の星形要塞で、函館戦争の舞台となった<br>La fortaleza más septentrional de estilo occidental en Japón. Una fortificación en forma de estrella pentagonal que fue escenario de la Guerra de Hakodate.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#goryokaku' },
+{ coords: [40.6079, 140.4637], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/205_12_l.jpg', title: '弘前城 / Castillo Hirosaki', description: '青森県を代表する城。日本で唯一、江戸時代の天守を移動して修理した城。桜の名所としても有名<br>El castillo representativo de la prefectura de Aomori. Es el único castillo en Japón donde se trasladó y reparó la torre del homenaje original del período Edo. También es famoso como lugar para ver cerezos en flor.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#hirosaki' },
+{ coords: [38.2555, 140.3278], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/13_001-3.webp', title: '山形城 / Castillo Yamagata', description: '最上氏の居城。別名「霞城」として知られる<br>Residencia del clan Mogami. También conocido como “Castillo Kasumi” (Castillo de la Niebla).', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#yamagata' },
+{ coords: [37.4875, 139.9297222], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/Wakamatsu_castle.jpg', title: '会津若松城 / Castillo Aizuwakamatsu', description: '会津藩の居城。白虎隊で有名な戊辰戦争の舞台<br>El castillo del dominio de Aizu. Famoso como escenario de la Guerra Boshin y por el Byakkotai (Cuerpo del Tigre Blanco).', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#aizuwakamatsu' },
+{ coords: [37.1324, 140.2137], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/1200px-Shirakawa_Komine_Castle_20100625-01.jpg', title: '白河小峰城 / Castillo Shirakawa Komine', description: '奥州街道の要衝に位置し、江戸時代を通じて重要な城<br>Ubicado en un punto estratégico de la ruta Oshu, fue un castillo importante durante todo el período Edo.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#komine' },
+{ coords: [35.2509, 139.1535], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/8-hdrimg-0.jpg', title: '小田原城 / Castillo de Odawara', description: '後北条氏の本拠地。現在も天守が再建され、観光名所となっている<br>Base principal del clan Hōjō tardío. Su torre del homenaje ha sido reconstruida y es una popular atracción turística.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#odawara' },
+{ coords: [36.2387, 137.9689], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/main.webp', title: '松本城 / Castillo de Matsumoto', description: '国宝五城の一つ。現存する日本最古の五重六階の天守<br>Uno de los cinco castillos Tesoro Nacional. La torre del homenaje más antigua de cinco pisos y seis plantas que se conserva en Japón.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#matsumoto' },
+{ coords: [37.9548, 139.326], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/2-2.jpg', title: '新発田城 / Castillo Shibata', description: '越後国の要衝。堀と水門が特徴的<br>Punto estratégico de la provincia de Echigo. Característico por sus fosos y compuertas.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#shibata' },
+{ coords: [36.7493, 137.0208], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/IMGP0688-1.jpg', title: '高岡城 / Castillo de Takaoka', description: '加賀前田家の支城。現在は高岡古城公園<br>Fortaleza auxiliar del clan Maeda de Kaga. Actualmente es el Parque del Castillo Antiguo de Takaoka.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#takaoka' },
+{ coords: [36.566, 136.6596], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/kanazawajou-p16-l.jpg', title: '金沢城 / Castillo de Kanazawa', description: '加賀前田家の居城。兼六園と共に金沢の象徴<br>Residencia del clan Maeda de Kaga. Símbolo de Kanazawa junto con el jardín Kenroku-en.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#kanazawa' },
+{ coords: [36.1523, 136.2721], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/Maruoka_Castle_Keep_Tower_Maruoka-cho_Sakai_2013.jpg', title: '丸岡城 / Castillo de Maruoka', description: '現存十二天守の一つ。越前国の要衝<br>Uno de los doce castillos originales que conservan su torre del homenaje. Punto estratégico de la provincia de Echizen.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#maruoka' },
+{ coords: [35.36, 137.4513], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/img_iwamura_top.jpg', title: '岩村城 / Castillo Iwamura', description: '険しい地形を利用した山城。備中松山城、大和高取城と並ぶ日本三大山城のひとつに数えられている<br>Castillo de montaña que aprovecha el terreno escarpado. Residencia del clan Toyama.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#iwamura' },
+{ coords: [35.4339, 136.7821], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/d_005_m.jpg', title: '岐阜城 / Castillo Gifu', description: '織田信長が居城とした山城。金華山の頂に位置する<br>Castillo de montaña que fue residencia de Oda Nobunaga. Situado en la cima del Monte Kinka.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#gifu' },
+{ coords: [34.7752, 138.0139], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/kakegawa-castle_01_4.jpg', title: '掛川城 / Castillo Kakegawa', description: '山内一豊が築城。現存する数少ない木造天守<br>Construido por Yamauchi Kazutoyo. Una de las pocas torres del homenaje de madera que se conservan.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#kakegawa' },
+{ coords: [35.3884, 136.9392], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/2e5da2eb0245062e091abc8ec342ab6b-520x350-1.png', title: '犬山城 / Castillo de Inuyama', description: '国宝五城の一つ。木曽川を見下ろす位置に建つ<br>Uno de los cinco castillos Tesoro Nacional. Construido en una posición que domina el río Kiso.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#inuyama' },
+{ coords: [35.1848, 136.8997], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/index_img01.webp', title: '名古屋城 / Castillo de Nagoya', description: '尾張徳川家の居城。金の鯱で有名<br>Residencia del clan Owari Tokugawa. Famoso por sus delfines dorados ornamentales.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#nagoya' },
+{ coords: [34.9563, 137.1588], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/2-3.jpg', title: '岡崎城 / Castillo Okazaki', description: '徳川家康生誕の城。三河武士の拠点<br>Castillo donde nació Tokugawa Ieyasu. Base de los samuráis de Mikawa.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#okazaki' },
+{ coords: [34.7702, 136.127], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/ueno_castle.jpg', title: '伊賀上野城 / Castillo Iga Ueno', description: '伊賀忍者の本拠地として知られる<br>Conocido como la base de los ninjas de Iga.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#igaueno' },
+{ coords: [351635, 1361506], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/tenshu.jpg', title: '彦根城 / Castillo Hikone', description: '国宝五城の一つ。井伊家の居城として栄えた<br>Uno de los cinco castillos Tesoro Nacional. Prosperó como residencia del clan Ii.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#hikone' },
+{ coords: [35.014, 135.7484], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/img_overview_index-1.png', title: '二条城 / Castillo de Nijō', description: '徳川家康が築城。世界遺産に登録された<br>Construido por Tokugawa Ieyasu. Registrado como Patrimonio de la Humanidad.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#nijo' },
+{ coords: [34.6873, 135.5259], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/keyvisual_bg_01.jpg', title: '大阪城 / Castillo de Osaka', description: '豊臣秀吉が築城。現在の天守は1931年に再建<br>Construido por Toyotomi Hideyoshi. La torre actual fue reconstruida en 1931.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#osaka' },
+{ coords: [35.3006, 134.8292], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/3124.jpg', title: '竹田城 / Castillo Takeda', description: '「天空の城」として知られる山城<br>Conocido como el “Castillo en el Cielo”. Un castillo de montaña.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#takeda' },
+{ coords: [34.6524, 134.9911], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/%E6%98%8E%E7%9F%B3%E8%A6%B3%E5%85%89%E5%8D%94%E4%BC%9AHP_%E6%98%8E%E7%9F%B3%E5%9F%8E%E2%91%A3%EF%BC%88%E5%9D%A4%EF%BC%8B%E6%A1%9C%EF%BC%89-1.jpg', title: '明石城 / Castillo de Akashi', description: '瀬戸内海を見下ろす位置に建つ。明石藩の居城<br>Construido en una posición que domina el Mar Interior de Seto. Residencia del dominio de Akashi.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#akashi' },
+{ coords: [34.8394, 134.6939], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/Himeji_castle_in_may_2015.jpg', title: '姫路城 / castillo himeji', description: '国宝五城の一つ。世界遺産に登録された日本を代表する城<br>Uno de los cinco castillos Tesoro Nacional. Patrimonio de la Humanidad y castillo representativo de Japón.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#himeji' },
+{ coords: [34.4295, 135.8268], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/Takatori_shiro_jpn.jpg', title: '高取城 / Castillo Takatori', description: '備中松山城、大和高取城と並ぶ日本三大山城のひとつに数えられている。ラピュタのモデルとも<br>El mejor castillo de montaña de la provincia de Yamato. Situado a 584 metros sobre el nivel del mar.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#takatori' },
+{ coords: [34.2277, 135.1715], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/unnamed-5.jpg', title: '和歌山城 / Castillo de Wakayama', description: '紀伊徳川家の居城。現在も天守が残る<br>Residencia del clan Kishu Tokugawa. Su torre del homenaje aún se conserva.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#wakayama' },
+{ coords: [35.5074, 134.24], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/1025_3_l.jpg', title: '鳥取城 / Castillo de Totori', description: '池田光仲の居城。石垣が美しい<br>Residencia de Ikeda Mitsunaka. Conocido por sus hermosos muros de piedra.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#totori' },
+{ coords: [35.4751, 133.0507], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/108__MQ-D-.jpg', title: '松江城 / Castillo Matsue', description: '現存十二天守の一つ。出雲松江藩の居城<br>Uno de los doce castillos originales que conservan su torre. Residencia del dominio Matsue de Izumo.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#matsue' },
+{ coords: [34.809, 133.622], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/800.jpg', title: '備中松山城 / Castillo Bitchu Matsuyama', description: '現存十二天守の一つ。天空の山城と呼ばれ、山頂に建つ天守が特徴<br>Uno de los doce castillos originales. Característico por su torre del homenaje en la cima de la montaña.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#bitchu' },
+{ coords: [34.6652, 133.9361], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/1200-4.jpg', title: '岡山城 / Castillo de Okayama', description: '別名「烏城」。池田家の居城として栄えた<br>También conocido como “Castillo del Cuervo”. Prosperó como residencia del clan Ikeda.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#okayama' },
+{ coords: [34.4911, 133.3611], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/88605.jpg', title: '福山城 / Castillo de Fukuyama', description: '備後福山藩の居城。五重層の天守が特徴<br>Residencia del dominio Fukuyama de Bingo. Característico por su torre de cinco pisos.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#fukuyama' },
+{ coords: [34.6517, 135.7792], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/255443481.jpg', title: '郡山城 / castillo de koriyama', description: '毛利氏の居城。安芸の要衝<br>Residencia del clan Mōri. Punto estratégico de Aki.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#koriyama' },
+{ coords: [34.4027, 132.4591], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/Hiroshima-Castle-1.jpg', title: '広島城 / castillo de hiroshima', description: '別名「鯉城」。浅野氏の居城として栄えた<br>También conocido como “Castillo de la Carpa”. Prosperó como residencia del clan Asano.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#hiroshima' },
+{ coords: [34.1752, 132.1742], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/11341_6_l.jpg', title: '岩国城 / Castillo de Iwakuni', description: '錦帯橋と共に知られる山城<br>Castillo de montaña conocido junto con el puente Kintai.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#iwakuni' },
+{ coords: [34.075192, 134.555275], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/20396_30602_img.jpg', title: '徳島城 / Castillo Tokushima', description: '蜂須賀氏の居城。徳島中央公園となっている<br>Residencia del clan Hachisuka. Actualmente es el Parque Central de Tokushima.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#tokushima' },
+{ coords: [34.3503, 134.0516], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/newtakamatujo.jpg', title: '高松城 / Castillo Takamatsu', description: '水城として有名。生駒氏の居城<br>Famoso como castillo de agua. Residencia del clan Ikoma.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#takamatsu' },
+{ coords: [34.286, 133.8004], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/2-4.jpg', title: '丸亀城 / Castillo de Marugame', description: '現存十二天守の一つ。日本一高い石垣を持つ<br>Uno de los doce castillos originales. Posee el muro de piedra más alto de Japón.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#marugame' },
+{ coords: [34.0634, 133.0068], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/2-1-1.jpg', title: '今治城 / Castillo Imabari', description: '瀬戸内海の要衝。藤堂高虎の築城<br>Punto estratégico del Mar Interior de Seto. Construido por Todo Takatora.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#imabari' },
+{ coords: [33.8456, 132.7655], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/matsuyamajo.jpg', title: '松山城 / Castillo Matsuyama', description: '現存十二天守の一つ。道後温泉と並ぶ松山の象徴<br>Uno de los doce castillos originales. Símbolo de Matsuyama junto con las aguas termales de Dogo.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#matsuyama' },
+{ coords: [33.5095, 132.5413], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/build-main-tower-1.jpg', title: '大洲城 / Castillo Ozu', description: '肱川沿いの平山城。加藤家の居城<br>Castillo en colina junto al río Hijikawa. Residencia del clan Kato.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#ozu' },
+{ coords: [33.2194, 132.5653], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/394_4.jpg', title: '宇和島城 / Castillo Uwajima', description: '伊予国の要。伊達氏の居城として栄えた<br>Fortaleza clave de la provincia de Iyo. Prosperó como residencia del clan Date.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#uwajima' },
+{ coords: [33.5608, 133.5315], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/1200px-Kochi_Castle04s3872.jpg', title: '高知城 / Castillo de Kochi', description: '現存十二天守の一つ。土佐藩山内家の居城<br>Uno de los doce castillos originales. Residencia del clan Yamauchi del dominio de Tosa.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#kochi' },
+{ coords: [333223, 1303123], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/Echizen_Ono_Castle.jpg', title: '大野城 / Castillo de Ono', description: '古代山城。朝鮮式山城とされる<Castillo de montaña antiguo. Considerado un castillo de estilo coreano.>', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#ono' },
+{ coords: [332206, 1293327], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/%E5%B9%B3%E6%88%B8%E5%9F%8E%E6%A8%A1%E6%93%AC%E5%A4%A9%E5%AE%88-1.jpg', title: '平戸城 / Castillo Hirado', description: '松浦氏の居城。海に臨む絶景の城<br>Residencia del clan Matsura. Castillo con vistas espectaculares al mar.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#hirado' },
+{ coords: [32.7892, 130.3673], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/facility-00.jpg', title: '島原城 / Castillo Shimabara', description: '島原半島の中心。島原の乱の舞台となった<br>Centro de la península de Shimabara. Escenario de la Rebelión de Shimabara.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#shimabara' },
+{ coords: [32.8062, 130.7058], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/img_zone02_05.jpg', title: '熊本城 / Castillo Kumamoto', description: '加藤清正が築いた名城。日本三名城の一つ<br>Famoso castillo construido por Kato Kiyomasa. Uno de los tres grandes castillos de Japón.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#kumamoto' },
+{ coords: [33.6067, 131.1864], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/nakatsujyo_ec_860-550-860x550-1.jpg', title: '中津城 / Castillo Nakatsu', description: '中津城（なかつじょう）または中津川城（なかつがわ（の）じょう）[1]は、大分県中津市二ノ丁（豊前国中津）にあった日本の城。黒田孝高（如水）が築城し、細川忠興が完成させた。 大分県指定史跡<br>Residencia del clan Otomo. Ubicado en el centro de la actual ciudad de Oita.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#nakatsu' },
+{ coords: [26.217, 127.7195], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/168015.jpg', title: '首里城 / Castillo Shuri', description: '琉球王国の正殿。沖縄のシンボル的存在<br>Palacio principal del Reino de Ryukyu. Símbolo de Okinawa.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#shuri' },
+{ coords: [33.4148, 131.6277], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/677-1.jpg', title: '杵築城（木付城） / Castillo de Kitsuki', description: '現在の天守閣は昭和45（1970）年に建てられ、中には藩主が使用した冑などを展示しています。守江湾を一望できるビュ－スポットです。', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#kitsuki' },
+{ coords: [31.6286, 131.3505], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/1543832509_11.jpg', title: '飫肥城 / Castillo Obi', description: '城郭はないがゆったりとした城下町が残る。飫肥城から城下町へ向かう途中の後町通りの水路を錦鯉が気持ちよさそうに泳ぐ。<br>Aunque el castillo ya no existe, se conserva una tranquila ciudad castillo. Las carpas koi nadan plácidamente en el canal de la calle Ushiromachi, que conduce desde el sitio del Castillo Obi hasta la ciudad castillo.', link: 'http://xs066656.xsrv.jp/2024/10/24/castillo-%e6%97%a5%e6%9c%ac%e3%81%ae%e5%9f%8e/#obi' }
+];
+
+
+// Data sakura
+
+var sakuraData = [
+    { coords: [42.3908333, 142.4311111], image: 'images/cerezos1.jpg', title: 'Cerezos en flor en la carretera de Nijukken', description: 'Hermosa vista de los cerezos en flor.', link: '#' },
+    { coords: [41.4297222, 140.1083333], image: 'images/parque2.jpg', title: 'Parque Matsumae', description: 'Un parque encantador lleno de historia y cerezos en flor.', link: '#' },
+    { coords: [40.9138888, 140.4505555], image: 'images/parque3.jpg', title: 'Parque Natural de la Prefectura de Ashino Ikenuma', description: 'Disfruta de la naturaleza en este parque natural.', link: '#' },
+    { coords: [40.6083333, 140.4652777], image: 'images/parque4.jpg', title: 'Parque Hirosaki', description: 'Uno de los mejores lugares para ver cerezos en Japón.', link: '#' },
+    { coords: [39.7227777, 141.1438888], image: 'images/parque5.jpg', title: 'Parque Takamatsu', description: 'Parque con paisajes espectaculares y flores de temporada.', link: '#' }
+];
+
+var kyotoData = [
+{ coords: [34.994859560425986, 135.78483266136837], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/sanpai_img04.jpg', title: '清水寺 / templo kiyomizu', description: '舞台造りの本堂から京都市街が一望できる。春と秋の夜間ライトアップは必見<br>Ofrece una vista panorámica de Kioto desde su terraza principal. La iluminación nocturna en primavera y otoño es imprescindible.', link: 'http://xs066656.xsrv.jp/2024/10/24/%e4%ba%ac%e9%83%bd%e3%81%a7%e7%b5%b6%e5%af%be%e6%ac%a0%e3%81%8b%e3%81%9b%e3%81%aa%e3%81%84%e3%82%b9%e3%83%9d%e3%83%83%e3%83%88/#kiyomizu' },
+{ coords: [35.03956325475079, 135.72933965951967], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/pexels-lorenzo-castellino-61076802-19432764-1024x683.jpg', title: '金閣寺 / Templo Kinkakuji', description: '金箔に覆われた三層楼閣が池に映える世界遺産。<br>Patrimonio de la Humanidad con un pabellón de tres pisos cubierto de oro. ', link: 'http://xs066656.xsrv.jp/2024/10/24/%e4%ba%ac%e9%83%bd%e3%81%a7%e7%b5%b6%e5%af%be%e6%ac%a0%e3%81%8b%e3%81%9b%e3%81%aa%e3%81%84%e3%82%b9%e3%83%9d%e3%83%83%e3%83%88/#kinkakuji' },
+{ coords: [35.010497761784464, 135.66659754382945], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/pexels-photo-3632689.jpg', title: '嵐山 / Arashiyama', description: '竹林の小径、渡月橋、トロッコ列車など見どころ満載。<br>Repleto de atracciones como el bosque de bambú, el puente Togetsukyo y el tren turístico. ', link: 'http://xs066656.xsrv.jp/2024/10/24/%e4%ba%ac%e9%83%bd%e3%81%a7%e7%b5%b6%e5%af%be%e6%ac%a0%e3%81%8b%e3%81%9b%e3%81%aa%e3%81%84%e3%82%b9%e3%83%9d%e3%83%83%e3%83%88/#arashiyama' },
+{ coords: [34.967756044090066, 135.77921978650656], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/pexels-photo-1310788.webp', title: '伏見稲荷大社 / Santuario Fushimi Inari', description: '千本鳥居で有名。<br>Famoso por sus miles de puertas torii. ', link: 'http://xs066656.xsrv.jp/2024/10/24/%e4%ba%ac%e9%83%bd%e3%81%a7%e7%b5%b6%e5%af%be%e6%ac%a0%e3%81%8b%e3%81%9b%e3%81%aa%e3%81%84%e3%82%b9%e3%83%9d%e3%83%83%e3%83%88/#inari' },
+{ coords: [35.01445967682408, 135.74859746136838], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/img_overview_index.png', title: '二条城 / Castillo de Nijō', description: '徳川家康の権威を示す豪華な内装<br>Destacado por su lujoso interior que muestra la autoridad de Tokugawa Ieyasu', link: 'http://xs066656.xsrv.jp/2024/10/24/%e4%ba%ac%e9%83%bd%e3%81%a7%e7%b5%b6%e5%af%be%e6%ac%a0%e3%81%8b%e3%81%9b%e3%81%aa%e3%81%84%e3%82%b9%e3%83%9d%e3%83%83%e3%83%88/#nijō' },
+{ coords: [35.66667403599171, 135.28931626320713], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/funaya-3.jpg', title: '伊根 / Ine', description: '伊根は、伊根湾に面した家々が特徴的で、「日本のベネチア」とも。<br>Es conocido por sus casas frente al mar, que le han valido el apodo de “Venecia de Japón”. ', link: 'http://xs066656.xsrv.jp/2024/10/24/%e4%ba%ac%e9%83%bd%e3%81%a7%e7%b5%b6%e5%af%be%e6%ac%a0%e3%81%8b%e3%81%9b%e3%81%aa%e3%81%84%e3%82%b9%e3%83%9d%e3%83%83%e3%83%88/#ine' },
+{ coords: [35.005122823949854, 135.7751331021369], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/pexels-photo-5745817.jpg', title: '祇園 / Gión', description: '舞妓さんに出会えるかも。古き良き京都の風情が残る花街<br>Posibilidad de ver geishas. Distrito tradicional que conserva la antigua atmósfera de Kioto', link: 'http://xs066656.xsrv.jp/2024/10/24/%e4%ba%ac%e9%83%bd%e3%81%a7%e7%b5%b6%e5%af%be%e6%ac%a0%e3%81%8b%e3%81%9b%e3%81%aa%e3%81%84%e3%82%b9%e3%83%9d%e3%83%83%e3%83%88/#gión' },
+{ coords: [35.02151470367815, 135.79431625767103], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/240px-Desolation_of_Philosophers_Walk_by_Covid19_3.jpg', title: '哲学の道 / camino de la filosofia', description: '桜並木が美しい約2kmの散歩道。沿道には素敵なカフェや甘味処が点在<br>Sendero de 2 km bordeado de cerezos. Salpicado de encantadores cafés y tiendas de dulces tradicionales', link: 'http://xs066656.xsrv.jp/2024/10/24/%e4%ba%ac%e9%83%bd%e3%81%a7%e7%b5%b6%e5%af%be%e6%ac%a0%e3%81%8b%e3%81%9b%e3%81%aa%e3%81%84%e3%82%b9%e3%83%9d%e3%83%83%e3%83%88/#filosofia' },
+{ coords: [35.00515762001374, 135.76484101719075], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/pexels-photo-2450697.jpg', title: '錦市場 / mercado de nishiki', description: '京都の台所と呼ばれる食の天国。試食や食べ歩きが楽しい活気ある市場<br> Conocido como la cocina de Kioto. Un animado mercado donde se puede disfrutar de degustaciones y comida callejera', link: 'http://xs066656.xsrv.jp/2024/10/24/%e4%ba%ac%e9%83%bd%e3%81%a7%e7%b5%b6%e5%af%be%e6%ac%a0%e3%81%8b%e3%81%9b%e3%81%aa%e3%81%84%e3%82%b9%e3%83%9d%e3%83%83%e3%83%88/#nishiki' },
+{ coords: [35.02860535093362, 135.79871934322722], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/ginkaku-ji-temple-kyoto-japan-161247.jpg', title: '銀閣寺 / Templo Ginkakuji', description: '静謐な日本庭園が魅力。金閣寺とは対照的な侘び寂びの美を体現<br>Cautivador por su tranquilo jardín japonés. Encarna la belleza wabi-sabi en contraste con el Kinkaku-ji', link: 'http://xs066656.xsrv.jp/2024/10/24/%e4%ba%ac%e9%83%bd%e3%81%a7%e7%b5%b6%e5%af%be%e6%ac%a0%e3%81%8b%e3%81%9b%e3%81%aa%e3%81%84%e3%82%b9%e3%83%9d%e3%83%83%e3%83%88/#ginkakuji' },
+{ coords: [35.03475784481689, 135.7182204846579], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/unnamed-4.jpg', title: '龍安寺 / Templo Ryoanji', description: '世界遺産の枯山水庭園。15個の石の配置が見る角度によって変化する<br>Patrimonio Mundial con su jardín zen. La disposición de sus 15 rocas cambia según el ángulo de visión', link: 'http://xs066656.xsrv.jp/2024/10/24/%e4%ba%ac%e9%83%bd%e3%81%a7%e7%b5%b6%e5%af%be%e6%ac%a0%e3%81%8b%e3%81%9b%e3%81%aa%e3%81%84%e3%82%b9%e3%83%9d%e3%83%83%e3%83%88/#ryoanji' },
+{ coords: [35.02422070333135, 135.76215432883552], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/331-1.jpg', title: '京都御所 / Palacio Imperial de Kioto', description: 'かつての天皇の住まい。<br>Antigua residencia del emperador. ', link: 'http://xs066656.xsrv.jp/2024/10/24/%e4%ba%ac%e9%83%bd%e3%81%a7%e7%b5%b6%e5%af%be%e6%ac%a0%e3%81%8b%e3%81%9b%e3%81%aa%e3%81%84%e3%82%b9%e3%83%9d%e3%83%83%e3%83%88/#kioto' },
+{ coords: [35.01174771754512, 135.79463430369728], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/Kyoto_Nanzenji01s5s4272-1024x683.jpg', title: '南禅寺 / Templo Nanzenji', description: '広大な寺院。特に水道橋として使われた煉瓦造りの水路閣が印象的<br>Extenso complejo templario. Destaca su acueducto de ladrillo', link: 'http://xs066656.xsrv.jp/2024/10/24/%e4%ba%ac%e9%83%bd%e3%81%a7%e7%b5%b6%e5%af%be%e6%ac%a0%e3%81%8b%e3%81%9b%e3%81%aa%e3%81%84%e3%82%b9%e3%83%9d%e3%83%83%e3%83%88/#nanzenji' },
+{ coords: [35.569985465007115, 135.19188477301313], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/pexels-photo-5220090.jpg', title: '天橋立 / amanohashidate', description: '日本三景のひとつ。雄大な松並木が続く絶景スポット<br>Kifune Jinja es un templo sintoísta en Kioto famoso por ser el hogar del dios del agua. ', link: 'http://xs066656.xsrv.jp/2024/10/24/%e4%ba%ac%e9%83%bd%e3%81%a7%e7%b5%b6%e5%af%be%e6%ac%a0%e3%81%8b%e3%81%9b%e3%81%aa%e3%81%84%e3%82%b9%e3%83%9d%e3%83%83%e3%83%88/#amanohashidate' },
+{ coords: [34.98069112560196, 135.74769350000003], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/1200px-Toji_2015-1024x683.jpg', title: '東寺 / Templo Toji', description: '五重塔が美しい。<br>Hermosa pagoda de cinco pisos. ', link: 'http://xs066656.xsrv.jp/2024/10/24/%e4%ba%ac%e9%83%bd%e3%81%a7%e7%b5%b6%e5%af%be%e6%ac%a0%e3%81%8b%e3%81%9b%e3%81%aa%e3%81%84%e3%82%b9%e3%83%9d%e3%83%83%e3%83%88/#toji' },
+{ coords: [34.98802513746127, 135.77173405767104], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/mv-img-1024x627.jpg', title: '三十三間堂 / Sanjusangendo', description: '1001体の千手観音像が並ぶ圧巻の光景。国宝の本尊も見もの<br>Impresionante vista de 1001 estatuas de Kannon. Notable por su estatua principal, un tesoro nacional', link: 'http://xs066656.xsrv.jp/2024/10/24/%e4%ba%ac%e9%83%bd%e3%81%a7%e7%b5%b6%e5%af%be%e6%ac%a0%e3%81%8b%e3%81%9b%e3%81%aa%e3%81%84%e3%82%b9%e3%83%9d%e3%83%83%e3%83%88/#sanjusangendo' },
+{ coords: [35.016333772481175, 135.78240484232896], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/Heian-jingu_keidai-1-1024x672.jpg', title: '平安神宮 / Santuario Heian', description: '桜や八重紅枝垂れ桜の名所。庭園が特に美しい<br>Famoso por sus cerezos y jardines especialmente hermosos', link: 'http://xs066656.xsrv.jp/2024/10/24/%e4%ba%ac%e9%83%bd%e3%81%a7%e7%b5%b6%e5%af%be%e6%ac%a0%e3%81%8b%e3%81%9b%e3%81%aa%e3%81%84%e3%82%b9%e3%83%9d%e3%83%83%e3%83%88/#heian' },
+{ coords: [34.99245017057096, 135.6837639441776], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/1280px-Saihouji-kokedera01-1024x680.jpg', title: '西芳寺 / Templo Saihoji', description: '美しい苔庭で有名<br>Famoso por su hermoso jardín de musgo. Requiere reserva previa y tiene límite de visitantes', link: 'http://xs066656.xsrv.jp/2024/10/24/%e4%ba%ac%e9%83%bd%e3%81%a7%e7%b5%b6%e5%af%be%e6%ac%a0%e3%81%8b%e3%81%9b%e3%81%aa%e3%81%84%e3%82%b9%e3%83%9d%e3%83%83%e3%83%88/#saihoji' },
+{ coords: [35.03959270284474, 135.77285659630272], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/Shimogamo-Jingya_National_Treasure_World_heritage_Kyoto_%E5%9B%BD%E5%AE%9D%E3%83%BB%E4%B8%96%E7%95%8C%E9%81%BA%E7%94%A3_%E4%B8%8B%E9%B4%A8%E7%A5%9E%E7%A4%BE_%E4%BA%AC%E9%83%BD25-1024x768.jpg', title: '下鴨神社 / Santuario Shimogamo', description: '古都の静けさを感じられる世界遺産。<br>Patrimonio Mundial que transmite la tranquilidad de la antigua capital. ', link: 'http://xs066656.xsrv.jp/2024/10/24/%e4%ba%ac%e9%83%bd%e3%81%a7%e7%b5%b6%e5%af%be%e6%ac%a0%e3%81%8b%e3%81%9b%e3%81%aa%e3%81%84%e3%82%b9%e3%83%9d%e3%83%83%e3%83%88/#shimogamo' },
+{ coords: [35.0040953065772, 135.77831736561853], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/fushimi-inari-taisha-shrine-kyoto-japan-temple-161401.jpg', title: '八坂神社 / Santuario Yasaka', description: '祇園祭の本社。夜間もライトアップされ、提灯の明かりが幻想的<br>Sede principal del festival Gion. Hermosamente iluminado por la noche con linternas tradicionales', link: 'http://xs066656.xsrv.jp/2024/10/24/%e4%ba%ac%e9%83%bd%e3%81%a7%e7%b5%b6%e5%af%be%e6%ac%a0%e3%81%8b%e3%81%9b%e3%81%aa%e3%81%84%e3%82%b9%e3%83%9d%e3%83%83%e3%83%88/#yasaka' },
+{ coords: [35.12237171278962, 135.76283499815136], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/win_01-862x1024.jpg', title: '貴船神社 / Santuario de Kibune', description: '京都市左京区にある神社で、水の神様を祀っています。<br>Kifune Jinja es un templo sintoísta en Kioto famoso por ser el hogar del dios del agua. ', link: 'http://xs066656.xsrv.jp/2024/10/24/%e4%ba%ac%e9%83%bd%e3%81%a7%e7%b5%b6%e5%af%be%e6%ac%a0%e3%81%8b%e3%81%9b%e3%81%aa%e3%81%84%e3%82%b9%e3%83%9d%e3%83%83%e3%83%88/#kibune' }
+];
+
+var yokochoData = [
+{ coords: [35.69311824248399, 139.69956167116447], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/%E5%BC%81%E5%A4%A9%E5%A0%82-46.webp', title: '新宿思い出横丁 / Shinjuku Omoide Yokocho', description: '<br>Alrededor de 60 restaurantes,se alinean en las calles desde la zona de la Salida Oeste de la Estación Shinjuku.', link: 'http://xs066656.xsrv.jp/2024/10/28/recorrido-de-bares-por-los-yokocho/#yokocho' },
+{ coords: [35.643201459517975, 139.67027122458532], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/content-1024x576.jpg', title: '三角地帯 / área del triángulo', description: '<br>Además de tiendas tradicionales, está viendo un aumento en bares y locales elegantes dirigidos por propietarios jóvenes.', link: 'http://xs066656.xsrv.jp/2024/10/28/recorrido-de-bares-por-los-yokocho/#triángulo' },
+{ coords: [35.70908254068814, 139.77526267061157], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/pexels-willianjusten-15925240-683x1024.jpg', title: 'アメヤ横丁 / Ameya Yokocho', description: '<br>Comúnmente llamada “Calle Comercial Ameyoko”, los precios son baratos, y muchos lugares tienen bares tachinomi (de pie) que están abiertos desde la tarde. ', link: 'http://xs066656.xsrv.jp/2024/10/28/recorrido-de-bares-por-los-yokocho/#yokocho' },
+{ coords: [35.71411575644758, 139.7948311166378], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/scB1-4nSfmnn-5z52DLqw2eftizZqGcb2wR64OpMY-XIvu7MufYhfheRkFkKHsZgUI8IcrGwcOJnAA3XsSVDMOonNjbnD_4DkY6CyJ2uka1RuwoXQ-cvUOs5l9QFhISVSubqnWFS8NYcWhB3DgxqRg-1024x576.jpg', title: 'ホッピー通り / calle lupulada', description: '<br>Recibió su nombre de una bebida barata llamada “Hoppy” que era popular cuando la cerveza era cara. ', link: 'http://xs066656.xsrv.jp/2024/10/28/recorrido-de-bares-por-los-yokocho/#lupulada' },
+{ coords: [35.64850550554498, 139.71071600184865], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/3.webp', title: '恵比寿横丁 / Yokocho Ebisu', description: '<br>Abierto en 2008 en el sitio del antiguo Centro Comercial Yamashita cerca de la Estación Ebisu, hay 19 tiendas.', link: 'http://xs066656.xsrv.jp/2024/10/28/recorrido-de-bares-por-los-yokocho/#ebisu' },
+{ coords: [35.66087772695264, 139.7018810595197], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/1596170579_b-1024x768.webp', title: '渋谷横丁 / Shibuya Yokocho', description: '<br>Ubicado en el centro comercial MIYASHITA PARK, inaugurado en 2020, este callejón de 100 metros de largo tiene muchas tiendas y los bares. ', link: 'http://xs066656.xsrv.jp/2024/10/28/recorrido-de-bares-por-los-yokocho/#yokocho' },
+{ coords: [35.67565887681109, 139.76481471294053], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/yurakucho7-1.jpg', title: '有楽町ガード下 / Fondo de guardia Yurakucho', description: '<br>El área de Yurakucho-Shimbashi, donde aún existen bares desde los años de posguerra, fue una vez una meca para bebedores. ', link: 'http://xs066656.xsrv.jp/2024/10/28/recorrido-de-bares-por-los-yokocho/#yurakucho' },
+{ coords: [35.69087772493271, 139.70195243231495], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/best-of-japan_shinjuku-higashiguchi-yokocho-1024x682-1-1024x682.webp', title: '新宿東口横丁 / Shinjuku salida este Yokocho', description: '<br>Este complejo gastronómico de dos pisos enfocado en el entretenimiento tiene 17 tiendas, como un comedor chino y comida callejera de Hong Kong.', link: 'http://xs066656.xsrv.jp/2024/10/28/recorrido-de-bares-por-los-yokocho/#yokocho' },
+{ coords: [35.68310841819647, 139.7036722466375], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/internal_1657032979666-1024x684.jpg', title: 'ほぼ新宿のれん街 / Casi la calle Shinjuku Noren', description: '<br>Una nueva zona de bares subterránea cerca de Yoyogi', link: 'http://xs066656.xsrv.jp/2024/10/28/recorrido-de-bares-por-los-yokocho/#noren' },
+{ coords: [35.69602769916901, 139.70092812946712], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/kabuki_hall_image-1-1.jpg', title: '歌舞伎横丁 / Kabuki Yokocho', description: '<br>Un edificio emblemático inaugurado en 2023 en Kabukicho que alberga cines, salas de conciertos y bares. Tambien podemos disfrutar concierto mientras de tomar.', link: 'http://xs066656.xsrv.jp/2024/10/28/recorrido-de-bares-por-los-yokocho/#yokocho' },
+{ coords: [35.66008934583246, 139.70196215033383], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/L1009750-1-1160x770-1-1024x680.jpg', title: '渋谷のんべい横丁 / Shibuya Nonbei Yokocho', description: '<br>Este distrito de bares comenzó como un mercado negro alrededor de Dogenzaka después de la Segunda Guerra Mundial. En 1950, los propietarios de 40 puestos de comida ganaron una lotería y establecieron sus tiendas aquí. Hoy en día, aproximadamente 40 tiendas se alinean en el callejón.', link: 'http://xs066656.xsrv.jp/2024/10/28/recorrido-de-bares-por-los-yokocho/#yokocho' },
+{ coords: [35.703867844707965, 139.579527848487], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/hamonika01-scaled-1-1024x706.jpg', title: 'ハーモニカ横丁 / callejón de la armónica', description: '<br>Un callejón tradicional cerca de la estación de Kichijoji con numerosos bares y restaurantes antiguos que mantienen la atmósfera de la era Showa.', link: 'http://xs066656.xsrv.jp/2024/10/28/recorrido-de-bares-por-los-yokocho/#armónica' },
+{ coords: [35.77981938438414, 139.7207166429438], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/94f374ea3ed6843c33322c43d936a3a3_t.jpg', title: 'オーケー横丁 / Está bien Yokocho', description: '<br>Este es un distrito de bebidas representativo del área de Akabane, junto con Akabane Ichibangai, que tiene Koi to Unagi no Marumasuya Sohonten. Algunos establecimientos están en ambos distritos, como la izakaya de mariscos Torobako. Hay cerca de 30 restaurantes y pubs. Aquí es posible beber durante el día.', link: 'http://xs066656.xsrv.jp/2024/10/28/recorrido-de-bares-por-los-yokocho/#yokocho' },
+{ coords: [35.68533614535779, 139.7839785331618], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/ginza-corridor1-1024x768.jpg', title: '甘酒横丁 / Callejón Amazake', description: '<br>Un callejón histórico en Ningyocho que data del período Edo, famoso por sus restaurantes tradicionales japoneses y tiendas de dulces.', link: 'http://xs066656.xsrv.jp/2024/10/28/recorrido-de-bares-por-los-yokocho/#amazake' },
+{ coords: [35.702845419594745, 139.7826412294475], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/Entrance-to-the-traditional-shopping-strip-Okazu-yokocho-in-Torigoe-Taito-ward.png', title: 'おかず横丁 / Callejón de guarnición', description: '<br>Una calle cerca de la estación de Okachimachi conocida por sus tiendas de comida y bares pequenos populares entre los residentes locales.', link: 'http://xs066656.xsrv.jp/2024/10/28/recorrido-de-bares-por-los-yokocho/#guarnición' }
+];
+
+
+// Data islas
+
+var islasData = [
+    { coords: [45.3030555, 141.0477777], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/download.jpg', title: '礼文島 / Isla Rebun', description: '日本最北のコンブ漁 <br> La pesca de algas kombu más al norte de Japón', link: 'http://xs066656.xsrv.jp/2024/10/07/%E5%B3%B6%E6%97%85%E3%81%AE%E3%82%B9%E3%82%B9%E3%83%A1/#rebun' },
+    { coords: [45.1286111, 141.1805555], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/10536_2_m.jpg', title: '利尻島 / Isla Rishiri', description: '北の島の利尻麒麟獅子舞<br>La danza del león Rishiri Kirin en la isla del norte', link: 'http://xs066656.xsrv.jp/2024/10/07/%E5%B3%B6%E6%97%85%E3%81%AE%E3%82%B9%E3%82%B9%E3%83%A1/#rishiri' },
+    { coords: [44.4372222, 141.4191666], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/download-1.jpg', title: '焼尻島 / Isla Yagishiri', description: 'イチイの原生林、羊、アザラシ<br>Bosque virgen de tejo japonés, ovejas y focas', link: 'http://xs066656.xsrv.jp/2024/10/07/%E5%B3%B6%E6%97%85%E3%81%AE%E3%82%B9%E3%82%B9%E3%83%A1/#yagishiri' },
+    { coords: [38.2955555, 141.4197222], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/tashirojima.jpg', title: '田代島 / Isla Tashirojima', description: '猫の島<br>Isla de gatos', link: 'http://xs066656.xsrv.jp/2024/10/07/%E5%B3%B6%E6%97%85%E3%81%AE%E3%82%B9%E3%82%B9%E3%83%A1/#tashirojima' },
+    { coords: [34.3741666, 139.2569444], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/S__7880756-745x559-1.jpg', title: '新島 / Isla Niijima', description: '耐火石の石造建築（コーガ石）<br>Edificios de piedra Koga (piedra resistente al fuego)', link: 'http://xs066656.xsrv.jp/2024/10/07/%E5%B3%B6%E6%97%85%E3%81%AE%E3%82%B9%E3%82%B9%E3%83%A1/#niijima' },
+    { coords: [34.2052777, 139.1344444], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/kankou-akasaki-d.jpg', title: '神津島 / Isla Kozushima', description: '伝統的な漁業文化「巻き網漁」<br>Cultura pesquera tradicional, pesca de cerco', link: 'http://xs066656.xsrv.jp/2024/10/07/%E5%B3%B6%E6%97%85%E3%81%AE%E3%82%B9%E3%82%B9%E3%83%A1/#kozushima' },
+    { coords: [34.0669444, 139.4825], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/320_picture1.jpg', title: '三宅島 / Isla Miyakejima', description: 'ひょうたん島のモデル<br>Ceremonia tradicional de Año Nuevo, bendición de barcos', link: 'http://xs066656.xsrv.jp/2024/10/07/%E5%B3%B6%E6%97%85%E3%81%AE%E3%82%B9%E3%82%B9%E3%83%A1/#miyakejima' },
+    { coords: [33.0663888, 139.8122222], image: 'https://www.hachijo.gr.jp/39rhf0e/wp-content/uploads/2019/09/ce6a5e93833c12cf955e25176d066ee8-1-e1567594208492.jpg', title: '八丈島 / Isla Hachijojima', description: '伝統織物「キハチジョウ」<br>Tejido tradicional Kihachijo', link: 'http://xs066656.xsrv.jp/2024/10/07/%E5%B3%B6%E6%97%85%E3%81%AE%E3%82%B9%E3%82%B9%E3%83%A1/#hachijojima' },
+    { coords: [24.0566666, 123.7813888], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/images_26ef3c9d00e4d3f23151ccd77d7d479911f675b0-w1200-2.jpg', title: '波照間島 / Isla Hateruma', description: '星空に一番近い島・日本最南端の島<br>Campos de caña de azúcar', link: 'http://xs066656.xsrv.jp/2024/10/07/%E5%B3%B6%E6%97%85%E3%81%AE%E3%82%B9%E3%82%B9%E3%83%A1/#hateruma' },            
+    { coords: [27.0952777, 142.1966666], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/20180502073202_1971473866_14267_0.jpg', title: '父島 / Isla Chichijima', description: '小笠原丸の出港の瞬間<br>El momento de la partida del barco Ogasawara Maru', link: 'http://xs066656.xsrv.jp/2024/10/07/%E5%B3%B6%E6%97%85%E3%81%AE%E3%82%B9%E3%82%B9%E3%83%A1/#chichijima' },
+    { coords: [38.02, 138.4488888], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/630.jpg', title: '佐渡島 / Isla Sado', description: 'トキと人間の共生のための島の環境づくり<br>Creación de un entorno en la isla para la coexistencia de ibis y personas', link: 'http://xs066656.xsrv.jp/2024/10/07/%E5%B3%B6%E6%97%85%E3%81%AE%E3%82%B9%E3%82%B9%E3%83%A1/#sado' },
+    { coords: [37.85, 136.9194444], image: 'images/castillo1.jpg', title: 'Isla Hegura', description: 'Isla de cairns (montículos de piedra) hechos por las buceadoras ama', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [37.1663888, 137.0355555], image: 'images/castillo1.jpg', title: 'Isla Notojima', description: 'La calidez de los isleños que reciben con cariño a los delfines', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [35.0419444, 139.1694444], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/img_gar1.jpg', title: '初島 / Isla Hatsushima', description: '受け継がれる知恵と自然の恵み：エビ網<br>Sabiduría heredada y regalo de la naturaleza: las redes para camarones', link: 'http://xs066656.xsrv.jp/2024/10/07/%E5%B3%B6%E6%97%85%E3%81%AE%E3%82%B9%E3%82%B9%E3%83%A1/#hatsushima' },
+    { coords: [34.7258333, 137.0344444], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/download-2.jpg', title: '佐久島 / Isla Sakushima', description: '三河湾の黒真珠<br>Perlas negras de la bahía de Mikawa', link: 'http://xs066656.xsrv.jp/2024/10/07/%E5%B3%B6%E6%97%85%E3%81%AE%E3%82%B9%E3%82%B9%E3%83%A1/#sakushima' },
+    { coords: [34.7047222, 136.9975], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/2f02c981b689d3b78ba8465b7b22d4ae.jpg', title: '日間賀島 / Isla Himakajima', description: '「名古屋から一番近い島」として知られ、タコとトラフグの名産地として親しまれています。<br>Festival Horoku', link: 'http://xs066656.xsrv.jp/2024/10/07/%E5%B3%B6%E6%97%85%E3%81%AE%E3%82%B9%E3%82%B9%E3%83%A1/#himakajima' },
+    { coords: [34.6844444, 137.0080555], image: 'images/castillo1.jpg', title: 'Isla Shinojima', description: 'Ofrenda de la dorada sagrada al santuario de Ise', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [34.5291666, 136.9047222], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/image.png', title: '答志島 / Isla Toshijima', description: 'また、答志島には海女が漁のために暖をとる「海女小屋」があり、小屋の火場（囲炉裏）を囲んで、気さくな海女さんとおしゃべりしながら食べる新鮮な魚介の味わいは格別<br>Festival del santuario Hachiman', link: 'http://xs066656.xsrv.jp/2024/10/07/%E5%B3%B6%E6%97%85%E3%81%AE%E3%82%B9%E3%82%B9%E3%83%A1/#toshijima' },
+    { coords: [34.4988888, 136.9005555], image: 'images/castillo1.jpg', title: 'Isla Sugashima', description: 'Festival Shirongo', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [34.1680555, 134.8197222], image: 'images/castillo1.jpg', title: 'Isla Nushima', description: 'Carros festivos entrando al mar - Festival de primavera del santuario Hachiman de Nushima', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [34.6769444, 134.5266666], image: 'images/castillo1.jpg', title: 'Isla Ieshima', description: 'Festival Tenjin de Ieshima', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [36.1913888, 133.2363888], image: 'images/castillo1.jpg', title: 'Isla Dogo', description: 'Cobertizos para botes en Oki-Dogo', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [36.2380555, 133.2347222], image: 'images/castillo1.jpg', title: 'Isla Dogo', description: 'Lucha de toros de Oki', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [36.1069444, 132.9733333], image: 'images/castillo1.jpg', title: 'Isla Nishinoshima', description: 'Armonía entre paisajes impresionantes y pastoreo: \'Makihata\'', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },    
+    { coords: [36.0208333, 133.015], image: 'images/castillo1.jpg', title: 'Isla Chiburijima', description: 'Monte Akahage que conserva vestigios del sistema de rotación de pastizales', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [34.6836111, 134.2991666], image: 'images/castillo1.jpg', title: 'Isla Otabu', description: 'Rompeolas de la era Genroku en el puerto pesquero de Otabu', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [34.6111111, 134.1711111], image: 'images/castillo1.jpg', title: 'Isla Maejima', description: 'Bosque de hierba marina', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [34.5663888, 134.105], image: 'images/castillo1.jpg', title: 'Isla Inujima', description: 'Isla de arte que utiliza el patrimonio industrial', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [34.4080555, 133.5136111], image: 'images/castillo1.jpg', title: 'Isla Shiraishijima', description: 'Danza Shiraishi', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [34.3611111, 133.5813888], image: 'images/castillo1.jpg', title: 'Isla Manabejima', description: 'Mikoshi corriendo', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [34.2347222, 132.9127777], image: 'images/castillo1.jpg', title: 'Isla Osakikamijima', description: 'Carrera de botes de remos en Osakikamijima', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [33.9447222, 132.2713888], image: 'images/castillo1.jpg', title: 'Isla Yashirojima', description: 'Tambores de Kuga Hikiyama', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [33.7797222, 131.9811111], image: 'images/castillo1.jpg', title: 'Isla Iwaishima', description: 'Arrozales en terrazas con muros de piedra', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [33.8588888, 132.0069444], image: 'images/castillo1.jpg', title: 'Isla Ushijima', description: 'Rompeolas de Fujita y Nishizaki', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [33.9816666, 131.7616666], image: 'images/castillo1.jpg', title: 'Isla Hegurashima', description: 'Festival Kifune', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [34.1013888, 130.7875], image: 'images/castillo1.jpg', title: 'Isla Futaoshima', description: 'Ceremonia del \'dios de la montaña\'', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [34.7633333, 131.1519444], image: 'images/castillo1.jpg', title: 'Isla Mishima', description: 'Cometas Oni-Yozu', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [34.1986111, 134.5975], image: 'images/castillo1.jpg', title: 'Islas Oge y Shimada', description: 'Ferry de Naruto', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [34.5033333, 134.2413888], image: 'images/castillo1.jpg', title: 'Isla Shodoshima', description: 'Kabuki rural y mil arrozales en terrazas', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [34.4752777, 134.3186111], image: 'images/castillo1.jpg', title: 'Isla Shodoshima', description: 'Pueblo de la salsa de soja con bodegas consecutivas', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [34.4852777, 134.0866666], image: 'images/castillo1.jpg', title: 'Isla Teshima', description: 'Agua relacionada con el gran maestro: \'Agua pura de Karato\'', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [34.3902777, 134.0513888], image: 'images/castillo1.jpg', title: 'Isla Megijima', description: 'Muros de piedra (Oote)', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [34.3941666, 133.7877777], image: 'images/castillo1.jpg', title: 'Isla Honshima', description: 'Paisaje urbano de Kasashima que conserva vestigios de una ciudad castillo medieval', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [34.1280555, 133.5358333], image: 'images/castillo1.jpg', title: 'Isla Ibukijima', description: 'Procesamiento de sardinas secas (iriko)', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [34.2444444, 133.1322222], image: 'images/castillo1.jpg', title: 'Isla Iwagishima', description: 'Mar donde madura la hierba marina', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [33.995, 133.3652777], image: 'images/castillo1.jpg', title: 'Isla Nii-Oshima', description: 'Festival de otoño \'Yomiya\'', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [34.1236111, 132.9780555], image: 'images/castillo1.jpg', title: 'Isla Kojima', description: 'Fortaleza Geiyo que queda en la ruta Shimanami Kaido', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [33.8941666, 132.6716666], image: 'images/castillo1.jpg', title: 'Isla Gogoshima', description: 'Danza del barco', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [33.9730555, 132.6202777], image: 'images/castillo1.jpg', title: 'Isla Nakajima', description: 'Paraíso de las mandarinas', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [33.2227777, 132.5222222], image: 'images/castillo1.jpg', title: 'Isla Kushima', description: 'Oni-ushi (demonio-buey) infantil', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [32.7386111, 132.5494444], image: 'images/castillo1.jpg', title: 'Islas Okinoshima y Ugurushima', description: 'Vida junto a muros y escaleras de piedra', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [33.8988888, 130.4336111], image: 'images/castillo1.jpg', title: 'Isla Munakata-Oshima', description: 'Festival Miare', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [34.2416666, 130.1041666], image: 'images/castillo1.jpg', title: 'Isla Okinoshima', description: 'Okinoshima, la isla donde habitan los dioses', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [33.4738888, 129.9880555], image: 'images/castillo1.jpg', title: 'Isla Takashima', description: 'Cabalgando las olas, trayendo sueños de vuelta: la ruta de regreso Hoto', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [33.5886111, 129.8611111], image: 'images/castillo1.jpg', title: 'Isla Kakarajima', description: 'Leyenda del nacimiento del rey Muryeong de Baekje', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [33.5861111, 129.84], image: 'images/castillo1.jpg', title: 'Isla Matsushima', description: 'Las personas ama que sustentan la vida', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [34.2208333, 129.2977777], image: 'images/castillo1.jpg', title: 'Isla Tsushima', description: 'Miel de Tsushima y colmenas', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [34.69, 129.4425], image: 'images/castillo1.jpg', title: 'Isla Tsushima', description: 'El árbol Hitotsubatago que ilumina el mar y el distrito de Waniura', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [33.4969444, 129.5444444], image: 'images/castillo1.jpg', title: 'Isla Matsuura-Oshima', description: 'Arrozales en terrazas de Daikon-zaka', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [33.1869444, 129.0627777], image: 'images/castillo1.jpg', title: 'Isla Ojika', description: 'Despedida de las madres de la isla', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [33.2816666, 129.1102777], image: 'images/castillo1.jpg', title: 'Isla Uku', description: 'Cría de ganado wagyu de alta calidad desde la isla', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [33.0483333, 129.0991666], image: 'images/castillo1.jpg', title: 'Isla Nakadomari', description: 'Secado de pez volador', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [32.8672222, 129.0080555], image: 'images/castillo1.jpg', title: 'Isla Wakamatsu', description: 'Cueva de la bahía de los cristianos', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [33.0122222, 129.1827777], image: 'images/castillo1.jpg', title: 'Isla Kashiragashima', description: 'Catedral de Kashiragashima', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [32.7694444, 128.9922222], image: 'images/castillo1.jpg', title: 'Isla Kabashima', description: 'Oración por una buena pesca. Festival del santuario de Kabashima: \'Remolque del Horai Maru\'', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [32.6863888, 128.8561111], image: 'images/castillo1.jpg', title: 'Isla Fukue', description: 'Danza budista \'Chankoko\'', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [32.57, 128.9041666], image: 'images/castillo1.jpg', title: 'Isla Koshima', description: 'Puerto de Koshima: \'Dique de piedra apilada\'', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [33.0019444, 129.35], image: 'images/castillo1.jpg', title: 'Isla Ejima', description: 'Salsa de soja artesanal de Ejima', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [32.885, 129.6], image: 'images/castillo1.jpg', title: 'Isla Ikeshima', description: 'Técnicas de extracción de carbón', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [32.6277777, 129.7380555], image: 'images/castillo1.jpg', title: 'Isla Hashima/Gunkanjima', description: 'Gunkanjima, que cuenta la prosperidad de la era Showa', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [32.3677777, 130.3491666], image: 'images/castillo1.jpg', title: 'Isla Yokoura', description: 'Barcos de cesta', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [32.5511111, 130.1152777], image: 'images/castillo1.jpg', title: 'Isla Tsujijima', description: 'Tsujijima donde nadan los delfines', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [33.7236111, 131.6483333], image: 'images/castillo1.jpg', title: 'Isla Himeshima', description: 'Danza Bon transmitida de generación en generación', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [32.6661111, 131.8161111], image: 'images/castillo1.jpg', title: 'Isla Shimanourajima', description: '¡Un momento lleno de vida! Gran festival de otoño del santuario Shimanoura', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [31.8458333, 129.9175], image: 'images/castillo1.jpg', title: 'Isla Kamikoshiki', description: 'La \'isla del alma\' con muros de piedra redondeada', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [30.7583333, 131.0719444], image: 'images/castillo1.jpg', title: 'Isla Tanegashima', description: 'Elaboración tradicional de azúcar moreno', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [30.6897222, 131.0616666], image: 'images/castillo1.jpg', title: 'Isla Tanegashima', description: 'Artes folclóricas transmitidas en Tanegashima', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [30.2341666, 130.4775], image: 'images/castillo1.jpg', title: 'Isla Yakushima', description: 'Aguas termales junto al mar, lugar de descanso para los residentes', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [30.8138888, 130.4172222], image: 'images/castillo1.jpg', title: 'Isla Takeshima', description: 'Reunirse alrededor de los brotes de bambú', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [30.7822222, 130.2791666], image: 'images/castillo1.jpg', title: 'Isla Iojima', description: 'Danza del tambor Hassaku', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [29.6886111, 129.5294444], image: 'images/castillo1.jpg', title: 'Isla Hirajima', description: 'Cultura tradicional de la isla relacionada con el clan Heike', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [29.4575, 129.5930555], image: 'images/castillo1.jpg', title: 'Isla Akusekijima', description: 'Baño de arena', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [28.3202777, 129.5322222], image: 'images/castillo1.jpg', title: 'Isla Amami Oshima', description: 'Grupo de ruinas de Kominato Fuwaneku y colonia de cícadas', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [28.0941666, 129.325], image: 'images/castillo1.jpg', title: 'Isla Kakeroma', description: 'Teatro Shibaya de Shodon', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [28.0438888, 129.1641666], image: 'images/castillo1.jpg', title: 'Isla Yorojima', description: 'Muros de coral que traen frescor', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [27.7272222, 129.0175], image: 'images/castillo1.jpg', title: 'Isla Tokunoshima', description: 'Danza de la playa de Kametsu', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [25.825, 131.2141666], image: 'images/castillo1.jpg', title: 'Isla Minamidaito', description: 'Piscina de agua de mar junto a la playa', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [25.9538888, 131.2841666], image: 'images/castillo1.jpg', title: 'Isla Kitadaito', description: 'Barcos pesqueros \'voladores\'', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [26.9972222, 127.9252777], image: 'images/castillo1.jpg', title: 'Isla Noho', description: 'Pequeña tienda en una pequeña isla', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [26.3697222, 127.9841666], image: 'images/castillo1.jpg', title: 'Isla Henza', description: 'Sangwacha (Festival del tercer mes del calendario lunar)', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [26.1294444, 127.7727777], image: 'images/castillo1.jpg', title: 'Isla Ou', description: 'Paisaje de secado de calamares voladores (Tobicha)', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [26.1975, 127.3647222], image: 'images/castillo1.jpg', title: 'Isla Tokashiki', description: 'Paisaje urbano donde nadan los peces', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [26.3394444, 126.8383333], image: 'images/castillo1.jpg', title: 'Isla Oha', description: 'Viejos pescadores y embarcaciones sabani', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [24.825, 125.1475], image: 'images/castillo1.jpg', title: 'Isla Shimoji', description: 'Aeropuerto de Shimojishima para entrenamiento de pilotos de jet civiles', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [24.33, 124.0852777], image: 'images/castillo1.jpg', title: 'Isla Taketomi', description: 'Festival de la cosecha de semillas \'Tanadui\' en armonía con la tradición japonesa', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [24.4191666, 123.7777777], image: 'images/castillo1.jpg', title: 'Isla Iriomote', description: 'Tinte y tejido que dan vida a la isla', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' },
+    { coords: [24.0566666, 123.7813888], image: 'images/castillo1.jpg', title: 'Isla Hateruma', description: 'Campos de caña de azúcar', link: 'https://business.jnto.go.jp/photo_and_video_library_jomc' }    
+];
+
+var jinjaData = [
+{ coords: [35.6764, 139.6993], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/sanpai_img04.jpg', title: '明治神宮 / Santuario Meiji Jingu', description: '1393年開山の浄土宗七大本山のひとつ　徳川家の菩提寺として2代秀忠公はじめ6人の将軍が眠る<br>Fundado en 1393, uno de los siete templos principales de la secta Jodo; el templo familiar de la familia Tokugawa; el lugar de descanso de seis shogunes, incluido el segundo Hidetada;', link: 'http://xs066656.xsrv.jp/2024/10/28/templos-y-santuarios/#meiji' },
+{ coords: [35.7148, 139.7967], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/Asakusa_Senso-ji_2021-12_ac_2.jpg', title: '浅草寺 / Templo Sensoji', description: '浅草に位置する寺。雷門が有名。<br>Templo ubicado en Asakusa, famoso por su puerta Kaminarimon "Puerta del Trueno".', link: 'http://xs066656.xsrv.jp/2024/10/28/templos-y-santuarios/#sensoji' },
+{ coords: [35.6941, 139.7438], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/1-1.jpg', title: '靖国神社 / Santuario Yasukuni', description: '幕末の志士から先の大戦までの戦歿者を祀る神社。古くより桜の名所として知られる<br>Santuario que consagra a los caídos en guerra desde el final del período Edo hasta la Segunda Guerra Mundial. Es conocido tradicionalmente como un lugar famoso para ver los cerezos en flor.', link: 'http://xs066656.xsrv.jp/2024/10/28/templos-y-santuarios/#yasukuni' },
+{ coords: [35.6575, 139.7483], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/c1-03-thumb-800xauto-123.jpg', title: '増上寺 / Templo Zojoji', description: '1393年開山の浄土宗七大本山のひとつ　徳川家の菩提寺として2代秀忠公はじめ6人の将軍が眠る<br>Uno de los siete templos principales de la secta Jodo, fundado en 1393. Como templo familiar del clan Tokugawa, aquí descansan seis shogunes, incluyendo a Hidetada Tokugawa, el segundo shogun.', link: 'http://xs066656.xsrv.jp/2024/10/28/templos-y-santuarios/#zojoji' },
+{ coords: [35.702, 139.7679], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/1200px-Kanda-Myojin_2012.jpg', title: '神田明神 / Santuario Kanda Myojin', description: '江戸東京を見守り続けて1300年　江戸三大祭りの「神田祭」が執り行われる神社<br>Santuario con 1300 años de historia vigilando Edo-Tokyo. Es sede del Festival de Kanda, uno de los tres grandes festivales de Edo.', link: 'http://xs066656.xsrv.jp/2024/10/28/templos-y-santuarios/#myojin' },
+{ coords: [38.9872, 141.1075], image: '', title: '毛越寺 / Templo Motsuji', description: '天台宗の別格本山で、平安時代末期の浄土庭園が国の特別史跡・特別名勝に指定されている。<br>Templo principal especial de la secta Tendai con un jardín de la Tierra Pura de finales del período Heian designado como sitio histórico especial y lugar escénico especial nacional.', link: 'http://xs066656.xsrv.jp/2024/10/28/templos-y-santuarios/#motsuji' },
+{ coords: [35.9688, 140.6315], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/Kashima-jingu_haiden-1.jpg', title: '鹿島神宮 / Santuario Kashima', description: '武甕槌大神を主祭神とする古社で、広大な樹叢を有する。<br>Antiguo santuario dedicado al dios Takemikazuchi con un extenso bosque sagrado.', link: 'http://xs066656.xsrv.jp/2024/10/28/templos-y-santuarios/#kashima' },
+{ coords: [36.7581, 139.5987], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/640_640_20231018143011_2-1.jpg', title: '日光東照宮 / Santuario Nikko Toshogu', description: '日光山信仰の中心として栄えた神社で、男体山・女峰山・太郎山の三神を祀る。<br>Santuario que prosperó como centro de la fe del Monte Nikkō dedicado a las deidades de los montes Nantai Nyohō y Tarō.', link: 'http://xs066656.xsrv.jp/2024/10/28/templos-y-santuarios/#toshogu' },
+{ coords: [35.9168, 139.6297], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/IMG_5247-530x530-1.jpg', title: '氷川神社 / Santuario Hikawa', description: '武蔵国一宮として知られる古社で、長い参道が特徴的。<br>Antiguo santuario conocido como el principal de la provincia de Musashi caracterizado por su largo camino de entrada.', link: 'http://xs066656.xsrv.jp/2024/10/28/templos-y-santuarios/#hikawa' },
+{ coords: [35.7861, 140.3182], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/172_1_l.jpg', title: '成田山新勝寺 / Templo Naritasan Shinshoji', description: '真言宗智山派の大本山で、広大な境内に多くの堂宇や美術館がある。<br>Templo principal de la secta Shingon Chisan-ha con numerosos edificios y museos en sus extensos terrenos.', link: 'http://xs066656.xsrv.jp/2024/10/28/templos-y-santuarios/#shinshoji' },
+{ coords: [35.3377, 139.5475], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/photo_01@2x.jpg', title: '円覚寺 / Templo Engakuji', description: '鎌倉五山第二位の臨済宗の寺院で、北条時宗が創建。<br>Segundo de los Cinco Grandes Templos Zen de Kamakura fundado por Hōjō Tokimune.', link: 'http://xs066656.xsrv.jp/2024/10/28/templos-y-santuarios/#engakuji' },
+{ coords: [35.3315, 139.5549], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/IMG_9592-2R-1.webp', title: '建長寺 / Templo Kenchoji', description: '鎌倉五山第一位の臨済宗寺院で、日本最初の臨済禅専門道場。<br>Primer templo de los Cinco Grandes Templos Zen de Kamakura y el primer monasterio especializado en zen Rinzai de Japón.', link: 'http://xs066656.xsrv.jp/2024/10/28/templos-y-santuarios/#kenchoji' },
+{ coords: [35.32472, 139.55583], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/index-img2.png', title: '鶴岡八幡宮 / Santuario Tsurugaoka Hachimangu', description: '源頼朝が源氏の守護神として篤く崇敬した鎌倉を代表する神社。<br>Santuario representativo de Kamakura venerado fervientemente por Minamoto no Yoritomo como deidad protectora del clan Genji.', link: 'http://xs066656.xsrv.jp/2024/10/28/templos-y-santuarios/#hachimangu' },
+{ coords: [35.3168, 139.5357], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/230128_Kamakura_Daibutsu_Japan01s3-scaled.jpg', title: '高徳院（鎌倉大仏殿） / Kotokuin (Gran Salón del Buda Kamakura)', description: '鎌倉の象徴的存在である国宝の大仏がある浄土宗の寺院。<br>Templo de la secta Tierra Pura que alberga el Gran Buda tesoro nacional y símbolo de Kamakura.', link: 'http://xs066656.xsrv.jp/2024/10/28/templos-y-santuarios/#kotoku-in' },
+{ coords: [37.7066, 138.8262], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/pic_main01-1024x532.jpg', title: '彌彦神社 / Santuario Yahiko', description: '越後一ノ宮として知られ、「産業の神様」天香山命を祀る神社。<br>Conocido como el santuario principal de Echigo dedicado a Ame-no-Kaguyama-no-Mikoto el "dios de la industria".', link: 'http://xs066656.xsrv.jp/2024/10/28/templos-y-santuarios/#yahiko' },
+{ coords: [36.0566, 136.3569], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/Eihei-ji_Temple_Chokushimon_Eiheiji-cho_2013.jpg', title: '永平寺 / Templo Eiheiji', description: '曹洞宗の大本山で、開祖道元が創建した坐禅修行の道場。<br>Templo principal de la secta Sōtō Zen fundado por Dōgen como centro de práctica de zazen.', link: 'http://xs066656.xsrv.jp/2024/10/28/templos-y-santuarios/#eiheiji' },
+{ coords: [35.225492, 138.252943], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/171.png', title: '身延山久遠寺 / Templo Minobuyama Kuonji', description: '日蓮宗の総本山で、日蓮聖人ゆかりの霊山として知られる。<br>Templo principal de la secta Nichiren conocido como la montaña sagrada asociada a Nichiren Shōnin.', link: 'http://xs066656.xsrv.jp/2024/10/28/templos-y-santuarios/#kuonji' },
+{ coords: [39.0004798452644, 141.105161653959], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/konjikido_01.jpg', title: '中尊寺 / Templo Chusonji', description: '藤原三代が築いた平泉文化を代表する天台宗の東北大本山。<br>Templo principal de la secta Tendai en Tōhoku representativo de la cultura Hiraizumi construida por tres generaciones de la familia Fujiwara.', link: 'http://xs066656.xsrv.jp/2024/10/28/templos-y-santuarios/#chusonji' },
+{ coords: [34.455, 136.7255], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/i_p01.jpg', title: '伊勢神宮 / Santuario de Ise', description: '125社の総称で、皇室の祖先神を祀る日本を代表する神社。<br>Nombre colectivo de 125 santuarios el santuario más representativo de Japón dedicado a las deidades ancestrales de la familia imperial.', link: 'http://xs066656.xsrv.jp/2024/10/28/templos-y-santuarios/#ise' },
+{ coords: [35.4019, 132.6855], image: 'http://xs066656.xsrv.jp/wp-content/uploads/2024/10/keidai-main11-1.jpg', title: '出雲大社 / Santuario Izumo Taisha', description: '大国主大神を主祭神とする古社で、縁結びの神として有名。<br>Antiguo santuario dedicado a Ōkuninushi no Ōkami famoso como deidad de los enlaces matrimoniales.', link: 'http://xs066656.xsrv.jp/2024/10/28/templos-y-santuarios/#taisha' }
+];
+
+// Define maxDescriptionLength only once at the top
+const maxDescriptionLength = 100;
+var castillo = L.layerGroup();
+
+function updateMapSettings() {
+    // Update icon and popup sizes based on screen width
+    var iconSize = window.matchMedia("(max-width: 768px)").matches ? [60, 60] : [40, 40];
+    var popupMaxWidth = window.matchMedia("(max-width: 768px)").matches ? '48vw' : '200px';
+    
+    // Update castilloIcon with dynamic sizes
+    var iconAnchorX = window.matchMedia("(max-width: 768px)").matches ? 30 : 20; // Adjust as necessary
+    var castilloIcon = L.icon({
+        iconUrl: 'https://www.sozailab.jp/db_img/sozai/23128/thumb_6668787a10a950947167bf58276a32e9.png',
+        iconSize: iconSize,
+        iconAnchor: [iconAnchorX, iconSize[1]], // Centering icon
+        popupAnchor: [0, -iconSize[1]] // Adjust as necessary
+    });
+
+    // Clear existing markers if reloading
+    if (castillo) castillo.clearLayers();
+
+    // Create the castillo layer group and populate it
+    castilloData.forEach(function(data) {
+        let truncatedDescription = data.description.length > maxDescriptionLength
+            ? data.description.substring(0, maxDescriptionLength) + '...'
+            : data.description;
+
+        const googleMapsLink = `https://www.google.com/maps/dir/?api=1&destination=${data.coords[0]},${data.coords[1]}`;
+        L.marker(data.coords, { icon: castilloIcon })
+            .bindPopup(
+                `<div style="max-width: ${popupMaxWidth}; padding: 5px;">
+                    <h1 style="height: 100px; width: 200px; background-image: url(${data.image}); background-repeat: no-repeat; background-size: cover; object-fit: cover;"></h1>
+                    <b>${data.title}</b><br>
+                    ${truncatedDescription}<br><br>
+                    <a href="${data.link}" target="_blank"><button style="background-color: blue; color: white;">Descubre Más</button></a><br>
+                    <a href="${googleMapsLink}" target="_blank"><button style="background-color: green; color: white; margin-top: 5px;">Get Directions</button></a>
+                </div>`
+            )
+            .on('click', function(e) {
+    // Delay the height measurement to allow the popup to render
+    setTimeout(() => {
+        // Get the popup element using the Leaflet API
+        const popupElement = document.querySelector('.leaflet-popup');
+        
+        // Check if the popup element exists
+        if (popupElement) {
+            // Get the height of the popup
+            const popupHeight = popupElement.offsetHeight;
+
+            // Adjust the lat/lng to account for the popup's height
+            const offset = map.project(e.latlng).y - (popupHeight / 2); // Calculate the new position
+            const adjustedLatLng = map.unproject([map.project(e.latlng).x, offset]); // Convert back to lat/lng
+
+            // Determine the target zoom level
+            const targetZoom = Math.min(map.getZoom() + 1, 9); // Increase zoom by 1, capped at 9
+
+            // Fly to the adjusted position
+            map.flyTo(adjustedLatLng, targetZoom, {
+                animate: true,
+                duration: 1 // 1 second for the fly animation
+            });
+        }
+    }, 0); // Set timeout to ensure popup is rendered before measuring
+})
+            .addTo(castillo);
+    });
+}
+
+// Call the function initially and add an event listener for resizing
+updateMapSettings();
+window.addEventListener("resize", updateMapSettings);
+
+var jinjaIcon = L.icon({
+    iconUrl: 'https://town-illust.com/e/town0205/s512_town0205_0.png', // Replace with your image URL
+    iconSize: [40, 40], // Adjust size as needed
+    iconAnchor: [20, 40], // Anchor the icon at the bottom center
+    popupAnchor: [0, -40] // Adjust to position popup above the icon
+});
+
+// Create the shrine layer group
+var jinja = L.layerGroup();
+jinjaData.forEach(function(data) {
+    // Check if the description is too long and truncate if necessary
+    let truncatedDescription = data.description;
+    if (data.description.length > maxDescriptionLength) {
+        truncatedDescription = data.description.substring(0, maxDescriptionLength) + '...';
+    }
+
+	const googleMapsLink = `https://www.google.com/maps/dir/?api=1&destination=${data.coords[0]},${data.coords[1]}`;
+    
+    L.marker(data.coords, {icon: jinjaIcon}).bindPopup(
+        "<div style='max-width: 200px;'>" +
+        "<h1 style='height: 100px; width: 200px; background-image: url("+ data.image +"); background-repeat: no-repeat; background-size: cover; object-fit: cover;'></h1>" +
+        "<b>" + data.title + "</b><br>" +
+        truncatedDescription + "<br><br>" +
+        "<a href='" + data.link + "' target='_blank'>" + 
+        "<button style='background-color: blue; color: white;'>Descubre Más</button>" +
+	"</a><br>" +
+        "<a href='" + googleMapsLink + "' target='_blank'>" + 
+        "<button style='background-color: green; color: white; margin-top: 5px;'>Get Directions</button>" +
+        "</a>" +
+        "</div>"
+    )
+	.on('click', function(e) {
+            // Get the current zoom level
+            const currentZoom = map.getZoom();
+            // Set the target zoom level relative to the current zoom
+            const targetZoom = Math.min(currentZoom + 1, 9); // Adds 1 zoom levels, capped at 9
+
+            // Fly to the marker with smooth animation
+            map.flyTo(e.latlng, targetZoom, {
+                animate: true,
+                duration: 1 // 1 seconds for the fly animation
+            });
+        })
+        .addTo(jinja);
+});
+
+
+// Create the sakura layer group
+var sakura = L.layerGroup();
+sakuraData.forEach(function(data) {
+    L.marker(data.coords).bindPopup(
+        "<h1 style='height: 100px; width: 200px; background-image: url("+ data.image +"); background-repeat: no-repeat; background-size: 100% 100%;'></h1>" +
+        "<b>" + data.title + "</b><br>" +
+        data.description + "<br><br>" +
+        "<a href='" + data.link + "' target='_blank'>" + 
+        "<button style='background-color: blue; color: white;'>Más info</button>" +
+        "</a>"
+    ).addTo(sakura);
+});
+
+// Create the Kyoto layer group
+var kyoto = L.layerGroup();
+kyotoData.forEach(function(data) {
+    // Check if the description is too long and truncate if necessary
+    let truncatedDescription = data.description;
+    if (data.description.length > maxDescriptionLength) {
+        truncatedDescription = data.description.substring(0, maxDescriptionLength) + '...';
+    }
+
+	const googleMapsLink = `https://www.google.com/maps/dir/?api=1&destination=${data.coords[0]},${data.coords[1]}`;
+    
+    L.marker(data.coords, {icon: jinjaIcon}).bindPopup(
+        "<div style='max-width: 200px; padding: 5px;'>" +
+        "<h1 style='height: 100px; width: 200px; background-image: url("+ data.image +"); background-repeat: no-repeat; background-size: cover; object-fit: cover;'></h1>" +
+        "<b>" + data.title + "</b><br>" +
+        truncatedDescription + "<br><br>" +
+        "<a href='" + data.link + "' target='_blank'>" + 
+        "<button style='background-color: blue; color: white;'>Descubre Más</button>" +
+	"</a><br>" +
+        "<a href='" + googleMapsLink + "' target='_blank'>" + 
+        "<button style='background-color: green; color: white; margin-top: 5px;'>Get Directions</button>" +
+        "</a>" +
+        "</div>"
+    )
+	.on('click', function(e) {
+            // Get the current zoom level
+            const currentZoom = map.getZoom();
+            // Set the target zoom level relative to the current zoom
+            const targetZoom = Math.min(currentZoom + 1, 9); // Adds 1 zoom levels, capped at 9
+
+            // Fly to the marker with smooth animation
+            map.flyTo(e.latlng, targetZoom, {
+                animate: true,
+                duration: 1 // 1 seconds for the fly animation
+            });
+        })
+        .addTo(kyoto);
+});
+
+// Create the Kyoto layer group
+var yokocho = L.layerGroup();
+yokochoData.forEach(function(data) {
+    // Check if the description is too long and truncate if necessary
+    let truncatedDescription = data.description;
+    if (data.description.length > maxDescriptionLength) {
+        truncatedDescription = data.description.substring(0, maxDescriptionLength) + '...';
+    }
+
+	const googleMapsLink = `https://www.google.com/maps/dir/?api=1&destination=${data.coords[0]},${data.coords[1]}`;
+    
+    L.marker(data.coords, {icon: jinjaIcon}).bindPopup(
+        "<div style='max-width: 200px; padding: 5px;'>" +
+        "<h1 style='height: 100px; width: 200px; background-image: url("+ data.image +"); background-repeat: no-repeat; background-size: cover; object-fit: cover;'></h1>" +
+        "<b>" + data.title + "</b><br>" +
+        truncatedDescription + "<br><br>" +
+        "<a href='" + data.link + "' target='_blank'>" + 
+        "<button style='background-color: blue; color: white;'>Descubre Más</button>" +
+	"</a><br>" +
+        "<a href='" + googleMapsLink + "' target='_blank'>" + 
+        "<button style='background-color: green; color: white; margin-top: 5px;'>Get Directions</button>" +
+        "</a>" +
+        "</div>"
+    )
+	.on('click', function(e) {
+            // Get the current zoom level
+            const currentZoom = map.getZoom();
+            // Set the target zoom level relative to the current zoom
+            const targetZoom = Math.min(currentZoom + 1, 19); // Adds 1 zoom levels, capped at 9
+
+            // Fly to the marker with smooth animation
+            map.flyTo(e.latlng, targetZoom, {
+                animate: true,
+                duration: 1 // 1 seconds for the fly animation
+            });
+        })
+        .addTo(yokocho);
+});
+    
+var matsuriIcon = L.icon({
+    iconUrl: 'https://www.sozailab.jp/db_img/sozai/88087/thumb_19effef0541f9187396db58273772f44.png', // Replace with your image URL
+    iconSize: [40, 40], // Adjust size as needed
+    iconAnchor: [20, 40], // Anchor the icon at the bottom center
+    popupAnchor: [0, -40] // Adjust to position popup above the icon
+});
+
+// Create the island layer group
+var islas = L.layerGroup();
+islasData.forEach(function(data) {
+    L.marker(data.coords, { icon: matsuriIcon }).bindPopup(
+	"<div style='max-width: 200px; padding: 5px;'>" +
+        "<h1 style='height: 100px; width: 200px; background-image: url("+ data.image +"); background-repeat: no-repeat; background-size: cover; object-fit: cover;'></h1>" +
+        "<b>" + data.title + "</b><br>" +
+        data.description + "<br><br>" +
+        "<a href='" + data.link + "' target='_blank'>" + 
+        "<button style='background-color: blue; color: white;'>Más info</button>" +
+        "</a>" +
+	"</div>"
+    ).addTo(islas);
+});
+
+// Initialize the map
+var map = L.map('map', {
+    center: [35.6712, 139.7811], 
+    zoom: 11,
+    layers: [sakura] // Set an initial layer if needed
+});
+
+// Add tile layer
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+}).addTo(map);
+
+// Create layer control
+var overlayMaps = {
+    "Castillos": castillo,
+    "Sakuras": sakura,
+    "Islas": islas,
+    "Templos": jinja,
+    "Kyoto": kyoto,
+    "Yokocho": yokocho
+};
+
+// Add layer control to the map
+L.control.layers(null, overlayMaps).addTo(map);
+
+</script>
+<style>
+    html, body {
+        height: 100%;
+        margin: 0;
+    }
+    
+    .leaflet-container {
+        height: 100%;
+        width: 100%;
+        max-width: 100%;
+        max-height: 100%;
+    }
+
+.leaflet-popup-content {
+	margin: -13px 3px 2px 4px;
+	line-height: 1.3;
+	font-size: 13px;
+	font-size: 1.08333em;
+	min-height: 1px;
+	}
+
+.leaflet-container a.leaflet-popup-close-button {
+	position: absolute;
+	top: 0;
+	right: 0;
+	border: none;
+	text-align: center;
+	width: 20px;
+	height: 24px;
+	font: 18px/18px Tahoma, Verdana, sans-serif;
+	color: #000000;
+	text-decoration: none;
+	background: transparent;
+	}
+</style>
+</head>
+<body>
+</body>
+</html>
