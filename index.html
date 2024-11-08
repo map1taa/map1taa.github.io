@@ -456,7 +456,7 @@ yokochoData.forEach(function(data) {
         .addTo(yokocho);
 });
     
-var matsuriIcon = L.icon({
+var   islaIcon = L.icon({
     iconUrl: 'https://www.sozailab.jp/db_img/sozai/88087/thumb_19effef0541f9187396db58273772f44.png', // Replace with your image URL
     iconSize: [40, 40], // Adjust size as needed
     iconAnchor: [20, 40], // Anchor the icon at the bottom center
@@ -466,7 +466,7 @@ var matsuriIcon = L.icon({
 // Create the island layer group
 var islas = L.layerGroup();
 islasData.forEach(function(data) {
-    L.marker(data.coords, { icon: matsuriIcon }).bindPopup(
+    L.marker(data.coords, { icon: islaIcon }).bindPopup(
 	"<div style='max-width: 200px; padding: 5px;'>" +
         "<h1 style='height: 100px; width: 200px; background-image: url("+ data.image +"); background-repeat: no-repeat; background-size: cover; object-fit: cover;'></h1>" +
         "<b>" + data.title + "</b><br>" +
